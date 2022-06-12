@@ -7,6 +7,7 @@ import com.endava.camel_demo.model.ProuctType;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.springframework.stereotype.Component;
 
 
@@ -29,15 +30,16 @@ public class MainRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        onException(Exception.class)
+       onException(Exception.class)
                 .handled(true)
                 .log("ERROR");
 
-        from("file:orders?noop=true")
+        from("file:orders")
                 .routeId("files")
                 .log("Incoming File: ${file:onlyname}") // logs the file name
                 .unmarshal(new JacksonDataFormat(Order.class))   // unmarshal JSON to Order class
-                .to(DIRECT_MAIN);
+                .to(DIRECT_MAIN)
+              ;
 
         from(DIRECT_MAIN)
                 .routeId("main")
