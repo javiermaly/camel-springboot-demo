@@ -20,6 +20,11 @@ public class MainRoute extends RouteBuilder {
     public static final String DIRECT_BARBACUE = "direct:barbacue";
     public static final String DIRECT_OTHERS = "direct:others";
     public static final String DIRECT_MAIN = "direct:main";
+    public static final String ACTIVEMQ_BAR = "activemq:bar";
+    public static final String ACTIVEMQ_DESSERT = "activemq:dessert";
+    public static final String ACTIVEMQ_MEAL = "activemq:meal";
+    public static final String ACTIVEMQ_BARBACUE = "activemq:barbacue";
+    public static final String ACTIVEMQ_OTHERS = "activemq:others";
 
     @Override
     public void configure() throws Exception {
@@ -32,7 +37,7 @@ public class MainRoute extends RouteBuilder {
 
         from(DIRECT_MAIN)
                 .routeId("main")
-                .log("DIRECT_MAIN: ${body}")
+                .log("${body}")
                 .log("TableNr: ${body.tableNr}")
                 .setHeader(ENDAVA_TABLE_NR, simple("${body.tableNr}")) // sets the tableNr as a header
                 .split().simple("${body.products}")   // split list to process products one by one
@@ -57,29 +62,28 @@ public class MainRoute extends RouteBuilder {
                 .to(DIRECT_BARBACUE)
 
                 .otherwise()
-                .to(DIRECT_OTHERS)
-                .removeHeaders("ENDAVA*");
+                .to(DIRECT_OTHERS);
 
         from(DIRECT_BAR)
                 .routeId("bar")
                 .log("Handling Drink")
-                .to("activemq:bar");
+                .to(ACTIVEMQ_BAR);
         from(DIRECT_DESSERT_STATION)
                 .routeId("dessertStation")
                 .log("Handling Dessert")
-                .to("activemq:dessert");
+                .to(ACTIVEMQ_DESSERT);
         from(DIRECT_MEAL_STATION)
                 .routeId("mealStation")
                 .log("Handling Meal")
-                .to("activemq:meal");
+                .to(ACTIVEMQ_MEAL);
         from(DIRECT_BARBACUE)
                 .routeId("barbacueStation")
                 .log("Handling Barbacue")
-                .to("activemq:barbacue");
+                .to(ACTIVEMQ_BARBACUE);
         from(DIRECT_OTHERS)
                 .routeId("others")
                 .log("Handling Something Other")
-                .to("activemq:others");
+                .to(ACTIVEMQ_OTHERS);
 
         // Creating a Rest endpoint that also consumes the same camel route to based content routing
         // http://localhost:8080/camel/api/orders
@@ -89,8 +93,8 @@ public class MainRoute extends RouteBuilder {
                 .post("/orders")
                 .route()
                 .unmarshal(new JacksonDataFormat(Order.class))   // unmarshal JSON to Order class
-                .to(DIRECT_MAIN);
-
+                .to(DIRECT_MAIN)
+                .removeHeaders("ENDAVA*");
     }
 
 
