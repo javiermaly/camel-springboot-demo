@@ -29,6 +29,10 @@ public class MainRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
+        onException(Exception.class)
+                .handled(true)
+                .log("ERROR");
+
         from("file:orders?noop=true")
                 .routeId("files")
                 .log("Incoming File: ${file:onlyname}") // logs the file name
