@@ -19,14 +19,20 @@ public class MainRoute extends RouteBuilder {
     public static final String DIRECT_MEAL_STATION = "direct:mealStation";
     public static final String DIRECT_BARBACUE = "direct:barbacue";
     public static final String DIRECT_OTHERS = "direct:others";
+    public static final String DIRECT_MAIN = "direct:main";
 
     @Override
     public void configure() throws Exception {
 
         from("file:orders?noop=true")
-                .routeId("main")
+                .routeId("files")
                 .log("Incoming File: ${file:onlyname}") // logs the file name
                 .unmarshal(new JacksonDataFormat(Order.class))   // unmarshal JSON to Order class
+                .to(DIRECT_MAIN);
+
+        from(DIRECT_MAIN)
+                .routeId("main")
+                .log("DIRECT_MAIN: ${body}")
                 .log("TableNr: ${body.tableNr}")
                 .setHeader(ENDAVA_TABLE_NR, simple("${body.tableNr}")) // sets the tableNr as a header
                 .split().simple("${body.products}")   // split list to process products one by one
@@ -74,6 +80,17 @@ public class MainRoute extends RouteBuilder {
                 .routeId("others")
                 .log("Handling Something Other")
                 .to("activemq:others");
+
+        // Creating a Rest endpoint that also consumes the same camel route to based content routing
+        // http://localhost:8080/camel/api/orders
+        rest("/api/")
+                .id("api-route")
+                .consumes("application/json")
+                .post("/orders")
+                .route()
+                .unmarshal(new JacksonDataFormat(Order.class))   // unmarshal JSON to Order class
+                .to(DIRECT_MAIN);
+
     }
 
 
@@ -88,4 +105,5 @@ public class MainRoute extends RouteBuilder {
            exchange.getIn().setBody(indOrder, IndividualOrder.class);
        };
     }
+
 }

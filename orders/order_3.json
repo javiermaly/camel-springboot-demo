@@ -1,0 +1,12 @@
+{
+  "tableNr": "22",
+  "products": [
+    {
+      "id": "567",
+      "productType": "BARBACUE",
+      "name": "ENTRECOTE CON FRITAS",
+      "description": "Pura pulpa con papas fritas crocantes",
+      "price": 332.34
+    }
+  ]
+}
