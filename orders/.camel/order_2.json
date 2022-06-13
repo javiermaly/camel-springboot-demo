@@ -1,0 +1,12 @@
+{
+  "tableNr": "6",
+  "products": [
+    {
+      "id": "5",
+      "productType": "DESSERT",
+      "name": "FLAN CON DDL",
+      "description": "Flan Casero",
+      "price": 32.34
+    }
+  ]
+}

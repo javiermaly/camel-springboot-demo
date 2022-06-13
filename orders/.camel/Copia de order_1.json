@@ -1,0 +1,26 @@
+{
+  "tableNr": "5",
+  "products": [
+    {
+      "id": "1",
+      "productType": "BAR",
+      "name": "Margarita",
+      "description": "con tequila y sal",
+      "price": 32.34
+    },
+    {
+      "id": "2",
+      "productType": "BARBACUE",
+      "name": "Asado",
+      "description": "Carne tipica uruguaya, con hueso",
+      "price": 132.34
+    },
+    {
+      "id": "3",
+      "productType": "MEAL",
+      "name": "MILANESA NAPOLITANA DE LA CASA",
+      "description": "Todo lo que esta bien",
+      "price": 132.34
+    }
+  ]
+}

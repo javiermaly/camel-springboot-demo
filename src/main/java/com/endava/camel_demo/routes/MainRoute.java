@@ -4,10 +4,10 @@ import com.endava.camel_demo.model.IndividualOrder;
 import com.endava.camel_demo.model.Order;
 import com.endava.camel_demo.model.Product;
 import com.endava.camel_demo.model.ProuctType;
+import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
-import org.apache.camel.model.dataformat.JsonLibrary;
 import org.springframework.stereotype.Component;
 
 
@@ -30,16 +30,15 @@ public class MainRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-       onException(Exception.class)
+      /*  onException(Exception.class)
                 .handled(true)
-                .log("ERROR");
+                .log("ERROR");*/
 
         from("file:orders")
                 .routeId("files")
                 .log("Incoming File: ${file:onlyname}") // logs the file name
                 .unmarshal(new JacksonDataFormat(Order.class))   // unmarshal JSON to Order class
-                .to(DIRECT_MAIN)
-              ;
+                .to(DIRECT_MAIN);
 
         from(DIRECT_MAIN)
                 .routeId("main")
@@ -74,18 +73,22 @@ public class MainRoute extends RouteBuilder {
                 .routeId("bar")
                 .log("Handling Drink")
                 .to(ACTIVEMQ_BAR);
+
         from(DIRECT_DESSERT_STATION)
                 .routeId("dessertStation")
                 .log("Handling Dessert")
                 .to(ACTIVEMQ_DESSERT);
+
         from(DIRECT_MEAL_STATION)
                 .routeId("mealStation")
                 .log("Handling Meal")
                 .to(ACTIVEMQ_MEAL);
+
         from(DIRECT_BARBACUE)
                 .routeId("barbacueStation")
                 .log("Handling Barbacue")
                 .to(ACTIVEMQ_BARBACUE);
+
         from(DIRECT_OTHERS)
                 .routeId("others")
                 .log("Handling Something Other")
@@ -101,19 +104,24 @@ public class MainRoute extends RouteBuilder {
                 .unmarshal(new JacksonDataFormat(Order.class))   // unmarshal JSON to Order class
                 .to(DIRECT_MAIN)
                 .removeHeaders("ENDAVA*");
+
+        // routes to an external source - api gateway
+        rest("/products")
+                .get()
+                .to("https://dummyjson.com/products?throwExceptionOnFailure=false&bridgeEndpoint=true");
     }
 
 
     private Processor convertProcessorProductToIndividualOrder() {
-       return exchange -> {
-           Product product = exchange.getIn().getBody(Product.class);
-           IndividualOrder indOrder = IndividualOrder.builder()
-                   .tableNr(String.valueOf(exchange.getIn().getHeader(ENDAVA_TABLE_NR)))
-                   .id(product.getId())
-                   .name(product.getName())
-                   .build();
-           exchange.getIn().setBody(indOrder, IndividualOrder.class);
-       };
+        return exchange -> {
+            Product product = exchange.getIn().getBody(Product.class);
+            IndividualOrder indOrder = IndividualOrder.builder()
+                    .tableNr(String.valueOf(exchange.getIn().getHeader(ENDAVA_TABLE_NR)))
+                    .id(product.getId())
+                    .name(product.getName())
+                    .build();
+            exchange.getIn().setBody(indOrder, IndividualOrder.class);
+        };
     }
 
 }
